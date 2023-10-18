@@ -4,12 +4,12 @@
 	ignite s module burn-action --dep bank
 	ignite s message BurnCoinsActions coins:coins --module burn-action
 
-edit: ```x/burnaction/types/expected_keepers.go```, add in ```BankKeeper```
+edit: `x/burnaction/types/expected_keepers.go`, add in `BankKeeper`
 
 	BurnCoins(ctx sdk.Context, burn string, amt sdk.Coins) error
 	SendCoinsFromAccountToModule(ctx sdk.Context, senderAddr sdk.AccAddress, recipientModule string, amt sdk.Coins) error
 
- edit: ```x/burnaction/keeper/msg_server_burn_coins_actions.go```
+ edit: `x/burnaction/keeper/msg_server_burn_coins_actions.go`
 
 ```
 package keeper

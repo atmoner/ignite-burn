@@ -19,7 +19,7 @@ package keeper
 import (
 	"context"
 
-	"chaintest/x/burnaction/types"
+	"chainburn/x/burnaction/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 )
 

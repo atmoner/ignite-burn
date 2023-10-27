@@ -14,7 +14,7 @@ ignite s message BurnCoinsAction coins:coins --module coin-actions
 
 edit: `x/coinactions/types/expected_keepers.go`, add in `BankKeeper`
 ```go
-MintCoins(ctx context.Context, moduleName string, amt sdk.Coins) error
+MintCoins(ctx sdk.Context, mint string, amt sdk.Coins) error
 BurnCoins(ctx sdk.Context, burn string, amt sdk.Coins) error
 SendCoinsFromModuleToAccount(ctx sdk.Context, senderModule string, recipientAddr sdk.AccAddress, amt sdk.Coins) error
 SendCoinsFromAccountToModule(ctx sdk.Context, senderAddr sdk.AccAddress, recipientModule string, amt sdk.Coins) error

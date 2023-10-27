@@ -27,9 +27,6 @@ func (k msgServer) BurnCoinsActions(goCtx context.Context, msg *types.MsgBurnCoi
 	ctx := sdk.UnwrapSDKContext(goCtx)
 	
 	creatorAddr, _ := sdk.AccAddressFromBech32(msg.Creator)
-	// Or, beware! Dangerous...
-	// creatorAddr, _ := sdk.AccAddressFrombech32(msg.Addr)
-
 	k.bankKeeper.SendCoinsFromAccountToModule(ctx, creatorAddr, types.ModuleName, msg.Coins)
 
 	err := k.bankKeeper.BurnCoins(ctx, types.ModuleName, msg.Coins)

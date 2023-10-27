@@ -84,6 +84,11 @@ func (k msgServer) BurnCoinsAction(goCtx context.Context, msg *types.MsgBurnCoin
 	return &types.MsgBurnCoinsActionResponse{}, nil
 }
 ```
+### Run chain
+```bash
+ignite chain serve
+```
+
 ### Mint
 ```bash
 ./mychaind tx coinactions mint-coins-action 1stakes,2token --from alice

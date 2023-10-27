@@ -1,4 +1,10 @@
 # ignite-burn
+
+> [!WARNING]  
+> Do not use in production!  
+> This is a simple POC, no error management is carried out so only use it in dev mode
+ 
+
 ```bash
 ignite scaffold chain chainburn --address-prefix chainburn
 ignite s module burn-action --dep bank

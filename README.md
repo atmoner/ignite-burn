@@ -6,18 +6,21 @@
  
 
 ```bash
-ignite scaffold chain chainburn --address-prefix chainburn
-ignite s module burn-action --dep bank
-ignite s message BurnCoinsActions coins:coins --module burn-action
+ignite scaffold chain mychain
+ignite s module coin-actions --dep bank
+ignite s message MintCoinsAction coins:coins --module coin-actions
+ignite s message BurnCoinsAction coins:coins --module coin-actions
 ```
 
-edit: `x/burnaction/types/expected_keepers.go`, add in `BankKeeper`
+edit: `x/coinactions/types/expected_keepers.go`, add in `BankKeeper`
 ```go
+MintCoins(ctx context.Context, moduleName string, amt sdk.Coins) error
 BurnCoins(ctx sdk.Context, burn string, amt sdk.Coins) error
+SendCoinsFromModuleToAccount(ctx sdk.Context, senderModule string, recipientAddr sdk.AccAddress, amt sdk.Coins) error
 SendCoinsFromAccountToModule(ctx sdk.Context, senderAddr sdk.AccAddress, recipientModule string, amt sdk.Coins) error
 ```
 
- edit: `x/burnaction/keeper/msg_server_burn_coins_actions.go`
+edit: `x/coinactions/keeper/msg_server_mint_coins_action.go`
 
 ```go
 package keeper
@@ -25,25 +28,68 @@ package keeper
 import (
 	"context"
 
-	"chainburn/x/burnaction/types"
+	"mychain/x/coinactions/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 )
 
-func (k msgServer) BurnCoinsActions(goCtx context.Context, msg *types.MsgBurnCoinsActions) (*types.MsgBurnCoinsActionsResponse, error) {
+// Mint msg.Coins from module and send them to the msg.Creator
+func (k msgServer) MintCoinsAction(goCtx context.Context, msg *types.MsgMintCoinsAction) (*types.MsgMintCoinsActionResponse, error) {
 	ctx := sdk.UnwrapSDKContext(goCtx)
 	
-	creatorAddr, _ := sdk.AccAddressFromBech32(msg.Creator)
-	k.bankKeeper.SendCoinsFromAccountToModule(ctx, creatorAddr, types.ModuleName, msg.Coins)
+	creatorAddr, err := sdk.AccAddressFromBech32(msg.Creator)
+    if err != nil {
+        return nil, err
+    }
 
-	err := k.bankKeeper.BurnCoins(ctx, types.ModuleName, msg.Coins)
-	if err != nil {
+    if err := k.bankKeeper.MintCoins(ctx, types.ModuleName, msg.Coins); err != nil {
+		return nil, err
+	}
+    if err := k.bankKeeper.SendCoinsFromModuleToAccount(ctx, types.ModuleName, creatorAddr, msg.Coins); err != nil {
+        return nil, err
+    }
+
+	return &types.MsgMintCoinsActionResponse{}, nil
+}
+```
+
+edit: `x/coinactions/keeper/msg_server_burn_coins_actions.go`
+
+```go
+package keeper
+
+import (
+	"context"
+
+	"mychain/x/coinactions/types"
+	sdk "github.com/cosmos/cosmos-sdk/types"
+)
+
+// Burn msg.Coins from msg.Creator balances
+func (k msgServer) BurnCoinsAction(goCtx context.Context, msg *types.MsgBurnCoinsAction) (*types.MsgBurnCoinsActionResponse, error) {
+	ctx := sdk.UnwrapSDKContext(goCtx)
+	
+	creatorAddr, err := sdk.AccAddressFromBech32(msg.Creator)
+    if err != nil {
+        return nil, err
+    }
+
+	if err := k.bankKeeper.SendCoinsFromAccountToModule(ctx, creatorAddr, types.ModuleName, msg.Coins); err != nil {
+        return nil, err
+    }
+
+	if err := k.bankKeeper.BurnCoins(ctx, types.ModuleName, msg.Coins); err != nil {
 		return nil, err
 	}
 
-	return &types.MsgBurnCoinsActionsResponse{}, nil
+	return &types.MsgBurnCoinsActionResponse{}, nil
 }
 ```
+### Mint
+```bash
+./mychaind tx coinactions mint-coins-action 1stakes,2token --from alice
+```
+
 ### Burn
 ```bash
-./chainburnd tx burnaction burn-coins-actions 1stakes --from alice
+./mychaind tx coinactions burn-coins-action 1stakes,2token --from alice
 ```
